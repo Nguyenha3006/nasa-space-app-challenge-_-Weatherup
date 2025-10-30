@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>weatherUP</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;600;800&display=swap"
+    rel="stylesheet" />
+  <link href="./static/css/main.css" rel="stylesheet" />
+
+  <script src="https://kit.fontawesome.com/dd7bc69c80.js" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+  <div id="progressBar"></div>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1><i class="fas fa-cloud"></i> weatherUP</h1>
+      <p class="tagline">UP to you, UP to weather</p>
+      <p class="description">Plan your outdoor adventures with confidence</p>
+      <button class="btn" onclick="document.getElementById('activities').scrollIntoView({behavior: 'smooth'})">
+        Start Planning
+      </button>
+    </div>
+  </section>
+
+  <!-- Weather Trends Chart -->
+  <section>
+    <div class="container">
+      <div class="dark-section">
+        <div class="section-header">
+          <h2>
+            <i class="fa-solid fa-cloud-sun"></i> Vietnam Weather Trends
+          </h2>
+        </div>
+        <div class="chart-container">
+          <canvas id="weatherChart"></canvas>
+          <div class="city-info">
+            <select id="citySelect">
+              <option value="Hanoi">Hanoi</option>
+              <option value="Ho Chi Minh">Ho Chi Minh</option>
+              <option value="Da Nang">Da Nang</option>
+              <option value="Hai Phong">Hai Phong</option>
+              <option value="Nha Trang">Nha Trang</option>
+            </select>
+            <div style="
+                  margin: 20px 0;
+                  display: flex;
+                  gap: 10px;
+                  flex-wrap: wrap;
+                ">
+              <button class="btn" onclick="updateChartPeriod('week')">
+                7 Days
+              </button>
+              <button class="btn" onclick="updateChartPeriod('3month')" style="background: #555">
+                3 Months
+              </button>
+              <button class="btn" onclick="updateChartPeriod('12month')" style="background: #555">
+                12 Months
+              </button>
+            </div>
+            <div class="grid grid-2">
+              <div class="info-box">
+                <i class="fa-solid fa-temperature-full"></i> Temperature<span id="temp">--</span>
+              </div>
+              <div class="info-box">
+                <i class="fa-solid fa-droplet"></i> Humidity<span id="humidity">--</span>
+              </div>
+              <div class="info-box">
+                <i class="fa-solid fa-wind"></i> Wind Speed<span id="wind">--</span>
+              </div>
+              <div class="info-box">
+                <i class="fa-regular fa-cloud"></i> Air Quality<span id="dust">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Weather Conditions -->
+  <section>
+    <div class="container">
+      <div class="section-header">
+        <h2>Weather Conditions We Analyze</h2>
+      </div>
+      <div class="grid grid-4" id="conditionsGrid"></div>
+    </div>
+  </section>
+
+  <!-- Activities Section -->
+  <section id="activities">
+    <div class="container">
+      <div class="form-container">
+        <div class="form-header">
+          <h2>
+            <i class="fa-solid fa-person-hiking"></i> Choose Your Activities
+          </h2>
+          <p>
+            Select activities you plan to do - we'll customize the weather
+            analysis accordingly
+          </p>
+        </div>
+        <div style="padding: 30px">
+          <div class="grid grid-5" id="activitiesGrid"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Location & Date Form -->
+  <section id="locationForm">
+    <div class="container">
+      <div class="form-container">
+        <div class="form-header">
+          <h2>
+            <i class="fa-solid fa-map-location-dot"></i> Location & Date
+            Selection
+          </h2>
+          <p>
+            Choose your destination and time for personalized weather risk
+            assessment
+          </p>
+        </div>
+        <div class="form-body">
+          <div>
+            <div class="form-group">
+              <h3><i class="fa-solid fa-location-dot"></i> Location</h3>
+              <input type="text" id="locationInput" placeholder="Enter location (e.g., Hoan Kiem Lake)" />
+            </div>
+            <div class="form-group">
+              <p style="margin-bottom: 10px">
+                Click to place a marker on the map
+              </p>
+            </div>
+            <div id="map"></div>
+          </div>
+          <div>
+            <div class="form-group">
+              <h3><i class="fa-regular fa-calendar"></i> Time of Year</h3>
+              <p style="margin-bottom: 10px">Select Month:</p>
+              <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 10px" id="monthGrid"></div>
+              <div id="daySection" class="hidden" style="margin-top: 20px">
+                <p style="margin-bottom: 10px">Select Day:</p>
+                <div class="grid" style="grid-template-columns: repeat(7, 1fr); gap: 8px" id="dayGrid"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="padding: 20px 30px; text-align: center">
+          <button class="btn" id="analyzeBtn" disabled style="width: 100%; max-width: 400px">
+            Analyze Weather Risk for Selected Activities
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results Section -->
+  <section id="results" class="hidden">
+    <div class="container">
+      <div class="section-header">
+        <h2 id="resultsTitle">
+          <i class="fa-solid fa-triangle-exclamation"></i> Risk Assessment
+        </h2>
+      </div>
+      <div class="grid grid-3" id="riskCards"></div>
+
+      <!-- Historical Trends Section -->
+      <div id="trendsSection" style="margin-top: 50px">
+        <div class="section-header">
+          <h2>
+            <i class="fa-solid fa-chart-line"></i> Historical Weather Trends
+            (2014-2024)
+          </h2>
+        </div>
+        <div class="grid grid-3" id="trendsGrid"></div>
+      </div>
+
+      <!-- Tips Section -->
+      <div id="tipsSection" style="margin-top: 50px">
+        <div class="section-header">
+          <h2>
+            <i class="fa-solid fa-lightbulb"></i> Personalized Tips & Advice
+          </h2>
+        </div>
+        <div class="grid grid-2" id="tipsGrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="./static/js/config.js"></script>
+  <script src="./static/js/main.js"></script>
+</body>
+
+</html>
