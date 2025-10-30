@@ -1,0 +1,80 @@
+[
+	{
+		"code": "01",
+		"name": "Ha Noi city",
+		"name_vi": "Thành phố Hà Nội",
+		"latitude": 21.0245,
+		"longitude": 105.8412,
+		"bbox": [
+			20.945,
+			105.742,
+			21.098,
+			105.911
+		]
+	},
+	{
+		"code": "31",
+		"name": "Hai Phong city",
+		"name_vi": "Thành phố Hải Phòng",
+		"latitude": 20.813222,
+		"longitude": 106.735684,
+		"bbox": [
+			20.65,
+			106.60,
+			20.95,
+			106.90
+		]
+	},
+	{
+		"code": "46",
+		"name": "Hue city",
+		"name_vi": "Thành phố Huế",
+		"latitude": 16.4619,
+		"longitude": 107.5955,
+		"bbox": [
+			15.98,
+			107.00,
+			16.75,
+			108.40
+		]
+	},
+	{
+		"code": "48",
+		"name": "Da Nang city",
+		"name_vi": "Thành phố Đà Nẵng",
+		"latitude": 16.0544,
+		"longitude": 108.2022,
+		"bbox": [
+			15.80,
+			108.00,
+			16.30,
+			108.50
+		]
+	},
+	{
+		"code": "79",
+		"name": "Ho Chi Minh city",
+		"name_vi": "Thành phố Hồ Chí Minh",
+		"latitude": 10.8231,
+		"longitude": 106.6297,
+		"bbox": [
+			10.60,
+			106.30,
+			11.10,
+			107.00
+		]
+	},
+	{
+		"code": "92",
+		"name": "Can Tho city",
+		"name_vi": "Thành phố Cần Thơ",
+		"latitude": 10.0452,
+		"longitude": 105.7469,
+		"bbox": [
+			9.80,
+			105.50,
+			10.30,
+			106.10
+		]
+	}
+]

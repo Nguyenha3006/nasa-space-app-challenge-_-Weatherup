@@ -1,0 +1,30 @@
+[
+	{
+		"code": "T",
+		"name": "Temperature",
+		"desc": "Extreme hot and cold conditions",
+		"icon": "fa-temperature-full",
+		"color": "#ff6347"
+	},
+	{
+		"code": "P",
+		"name": "Precipitation",
+		"desc": "Rain, snow, and wet conditions",
+		"icon": "fa-droplet",
+		"color": "#3498db"
+	},
+	{
+		"code": "W",
+		"name": "Wind Speed",
+		"desc": "Dangerous wind conditions",
+		"icon": "fa-wind",
+		"color": "#2ecc71"
+	},
+	{
+		"code": "V",
+		"name": "Visibility",
+		"desc": "Dust, fog and low visibility",
+		"icon": "fa-solid fa-eye-slash",
+		"color": "#95a5a6"
+	}
+]
