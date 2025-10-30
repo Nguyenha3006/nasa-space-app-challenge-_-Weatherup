@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>weatherUP</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <script
+      src="https://kit.fontawesome.com/dd7bc69c80.js"
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      :root {
+        --primary: #5d5cde;
+        --primary-dark: #4a49b8;
+        --bg-dark: rgba(24, 24, 24, 0.95);
+        --bg-light: #ffffff;
+        --text-light: #e0e0e0;
+        --text-dark: #333;
+        --border-radius: 12px;
+        --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Merriweather", serif;
+        background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.3)),
+          url("../images/mf.png") center/cover fixed;
+
+        color: var(--text-dark);
+        line-height: 1.6;
+      }
+
+      .dark body {
+        background-color: #181818;
+        color: var(--text-light);
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+      .grid {
+        display: grid;
+        gap: 20px;
+      }
+      .grid-2 {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+      .grid-3 {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      }
+      .grid-4 {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
+      .grid-5 {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      }
+      .hidden {
+        display: none !important;
+      }
+
+      .btn,
+      .activity-btn,
+      .date-btn {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: var(--primary);
+        color: white;
+        font-size: 16px;
+      }
+      .btn:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+      }
+      .btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .activity-btn,
+      .date-btn {
+        background: rgba(70, 70, 85, 0.8);
+        color: var(--text-light);
+        border: 2px solid #555;
+        text-align: center;
+        padding: 15px;
+      }
+      .activity-btn:hover,
+      .date-btn:hover {
+        background: rgba(90, 90, 105, 0.9);
+      }
+      .activity-btn.active,
+      .date-btn.active {
+        background: var(--primary);
+        border-color: var(--primary);
+      }
+
+      .hero {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        position: relative;
+      }
+      .hero-content {
+        animation: fadeUp 0.8s;
+      }
+      .hero h1 {
+        font-size: clamp(2.5em, 8vw, 4.5em);
+        font-weight: 800;
+        margin-bottom: 10px;
+      }
+      .hero .tagline {
+        font-size: 1.5em;
+        font-weight: 300;
+        margin-bottom: 20px;
+      }
+      .hero .description {
+        font-size: 1.2em;
+        opacity: 0.9;
+        margin-bottom: 30px;
+      }
+
+      section {
+        padding: 60px 0;
+      }
+      .section-header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+      .section-header h2 {
+        font-size: 2em;
+        margin-bottom: 10px;
+        color: white;
+      }
+      .section-header i {
+        color: var(--primary);
+      }
+
+      .card,
+      .dark-section {
+        background: var(--bg-dark);
+        color: var(--text-light);
+        padding: 30px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        transition: transform 0.3s ease;
+        position: relative;
+      }
+      .card:hover {
+        transform: translateY(-5px);
+      }
+      .card .icon {
+        font-size: 3em;
+        margin-bottom: 20px;
+      }
+      .card h3 {
+        margin-bottom: 10px;
+        color: #fff;
+      }
+      .card p {
+        color: #bbb;
+        font-size: 0.9em;
+      }
+
+      .form-container {
+        background: var(--bg-dark);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .form-header {
+        background: var(--primary);
+        color: white;
+        padding: 25px;
+      }
+      .form-body {
+        padding: 30px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .form-group h3 {
+        margin-bottom: 15px;
+        font-size: 1.2em;
+        color: #fff;
+      }
+      .form-group h3 i {
+        color: #5a9fd4;
+      }
+      .form-group p {
+        color: #bbb;
+      }
+
+      input[type="text"],
+      select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #555;
+        border-radius: 6px;
+        font-size: 16px;
+        background: rgba(50, 50, 65, 0.8);
+        color: var(--text-light);
+      }
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+
+      .chart-container {
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+      }
+      .chart-container canvas {
+        flex: 2;
+        max-height: 400px;
+      }
+      .city-info {
+        flex: 1;
+        min-width: 250px;
+      }
+
+      .info-box {
+        background: rgba(50, 50, 65, 0.8);
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 15px;
+        color: var(--text-light);
+      }
+      .info-box span {
+        display: block;
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #5a9fd4;
+      }
+
+      .risk-level {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.75em;
+        font-weight: 700;
+      }
+      .risk-level.low {
+        background: #2d5016;
+        color: #7dff5c;
+      }
+      .risk-level.moderate {
+        background: #5c4a1a;
+        color: #ffd75c;
+      }
+      .risk-level.high {
+        background: #5c1a1a;
+        color: #ff5c5c;
+      }
+
+      .progress-bar {
+        height: 8px;
+        background: rgba(50, 50, 65, 0.8);
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 10px 0;
+      }
+      .progress-fill {
+        height: 100%;
+        transition: width 0.5s;
+      }
+      .progress-fill.green {
+        background: #5cb85c;
+      }
+      .progress-fill.red {
+        background: #d9534f;
+      }
+
+      #progressBar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 4px;
+        background: var(--primary);
+        width: 0%;
+        z-index: 9999;
+        transition: width 0.3s;
+      }
+
+      #map {
+        height: 250px;
+        width: 100%;
+        margin: 20px 0;
+        border-radius: 8px;
+      }
+
+      .tip-card {
+        background: linear-gradient(
+          135deg,
+          rgba(93, 92, 222, 0.1),
+          rgba(74, 73, 184, 0.1)
+        );
+        border-left: 4px solid var(--primary);
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+      }
+      .tip-card h4 {
+        color: var(--primary);
+        margin-bottom: 10px;
+      }
+      .tip-card p {
+        color: #bbb;
+      }
+
+      .trend-card {
+        background: var(--bg-dark);
+        color: var(--text-light);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        padding: 1.5rem;
+        transition: transform 0.3s ease;
+      }
+      .trend-card:hover {
+        transform: translateY(-6px);
+      }
+
+      .trend-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+      .trend-change {
+        font-size: 0.8rem;
+        font-weight: bold;
+        padding: 0.2rem 0.5rem;
+        border-radius: 5px;
+        text-transform: uppercase;
+      }
+      .trend-change.increasing {
+        background: #5c1a1a;
+        color: #ff5c5c;
+      }
+      .trend-change.decreasing {
+        background: #1a3a5c;
+        color: #5cadff;
+      }
+      .trend-change.stable {
+        background: #3a3a3a;
+        color: #aaa;
+      }
+
+      #tipsSection {
+        background-color: #181818;
+        padding: 30px 20px; 
+        border-radius: 12px; 
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); 
+        margin-top: 50px; 
+      }
+
+      #tipsSection:hover {
+        transform: translateY(-6px);
+        transition: all 0.3s;
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .form-body {
+          grid-template-columns: 1fr;
+        }
+        .chart-container {
+          flex-direction: column;
+        }
+        .grid-4 {
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+        .grid-5 {
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="progressBar"></div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <h1><i class="fas fa-cloud"></i> weatherUP</h1>
+        <p class="tagline">UP to you, UP to weather</p>
+        <p class="description">Plan your outdoor adventures with confidence</p>
+        <button
+          class="btn"
+          onclick="document.getElementById('activities').scrollIntoView({behavior: 'smooth'})"
+        >
+          Start Planning
+        </button>
+      </div>
+    </section>
+
+    <!-- Weather Trends Chart -->
+    <section>
+      <div class="container">
+        <div class="dark-section">
+          <div class="section-header">
+            <h2>
+              <i class="fa-solid fa-cloud-sun"></i> Vietnam Weather Trends
+            </h2>
+          </div>
+          <div class="chart-container">
+            <canvas id="weatherChart"></canvas>
+            <div class="city-info">
+              <select id="citySelect">
+                <option value="Hanoi">Hanoi</option>
+                <option value="Ho Chi Minh">Ho Chi Minh</option>
+                <option value="Da Nang">Da Nang</option>
+                <option value="Hai Phong">Hai Phong</option>
+                <option value="Nha Trang">Nha Trang</option>
+              </select>
+              <div
+                style="
+                  margin: 20px 0;
+                  display: flex;
+                  gap: 10px;
+                  flex-wrap: wrap;
+                "
+              >
+                <button class="btn" onclick="updateChartPeriod('week')">
+                  7 Days
+                </button>
+                <button
+                  class="btn"
+                  onclick="updateChartPeriod('3month')"
+                  style="background: #555"
+                >
+                  3 Months
+                </button>
+                <button
+                  class="btn"
+                  onclick="updateChartPeriod('12month')"
+                  style="background: #555"
+                >
+                  12 Months
+                </button>
+              </div>
+              <div class="grid grid-2">
+                <div class="info-box">
+                  <i class="fa-solid fa-temperature-full"></i> Temperature<span
+                    id="temp"
+                    >--</span
+                  >
+                </div>
+                <div class="info-box">
+                  <i class="fa-solid fa-droplet"></i> Humidity<span
+                    id="humidity"
+                    >--</span
+                  >
+                </div>
+                <div class="info-box">
+                  <i class="fa-solid fa-wind"></i> Wind Speed<span id="wind"
+                    >--</span
+                  >
+                </div>
+                <div class="info-box">
+                  <i class="fa-regular fa-cloud"></i> Air Quality<span id="dust"
+                    >--</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Weather Conditions -->
+    <section>
+      <div class="container">
+        <div class="section-header">
+          <h2>Weather Conditions We Analyze</h2>
+        </div>
+        <div class="grid grid-4" id="conditionsGrid"></div>
+      </div>
+    </section>
+
+    <!-- Activities Section -->
+    <section id="activities">
+      <div class="container">
+        <div class="form-container">
+          <div class="form-header">
+            <h2>
+              <i class="fa-solid fa-person-hiking"></i> Choose Your Activities
+            </h2>
+            <p>
+              Select activities you plan to do - we'll customize the weather
+              analysis accordingly
+            </p>
+          </div>
+          <div style="padding: 30px">
+            <div class="grid grid-5" id="activitiesGrid"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Location & Date Form -->
+    <section id="locationForm">
+      <div class="container">
+        <div class="form-container">
+          <div class="form-header">
+            <h2>
+              <i class="fa-solid fa-map-location-dot"></i> Location & Date
+              Selection
+            </h2>
+            <p>
+              Choose your destination and time for personalized weather risk
+              assessment
+            </p>
+          </div>
+          <div class="form-body">
+            <div>
+              <div class="form-group">
+                <h3><i class="fa-solid fa-location-dot"></i> Location</h3>
+                <input
+                  type="text"
+                  id="locationInput"
+                  placeholder="Enter location (e.g., Hoan Kiem Lake)"
+                />
+              </div>
+              <div class="form-group">
+                <p style="margin-bottom: 10px">
+                  Click to place a marker on the map
+                </p>
+              </div>
+              <div id="map"></div>
+            </div>
+            <div>
+              <div class="form-group">
+                <h3><i class="fa-regular fa-calendar"></i> Time of Year</h3>
+                <p style="margin-bottom: 10px">Select Month:</p>
+                <div
+                  class="grid"
+                  style="grid-template-columns: repeat(3, 1fr); gap: 10px"
+                  id="monthGrid"
+                ></div>
+                <div id="daySection" class="hidden" style="margin-top: 20px">
+                  <p style="margin-bottom: 10px">Select Day:</p>
+                  <div
+                    class="grid"
+                    style="grid-template-columns: repeat(7, 1fr); gap: 8px"
+                    id="dayGrid"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="padding: 20px 30px; text-align: center">
+            <button
+              class="btn"
+              id="analyzeBtn"
+              disabled
+              style="width: 100%; max-width: 400px"
+            >
+              Analyze Weather Risk for Selected Activities
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results Section -->
+    <section id="results" class="hidden">
+      <div class="container">
+        <div class="section-header">
+          <h2 id="resultsTitle">
+            <i class="fa-solid fa-triangle-exclamation"></i> Risk Assessment
+          </h2>
+        </div>
+        <div class="grid grid-3" id="riskCards"></div>
+
+        <!-- Historical Trends Section -->
+        <div id="trendsSection" style="margin-top: 50px">
+          <div class="section-header">
+            <h2>
+              <i class="fa-solid fa-chart-line"></i> Historical Weather Trends
+              (2014-2024)
+            </h2>
+          </div>
+          <div class="grid grid-3" id="trendsGrid"></div>
+        </div>
+
+        <!-- Tips Section -->
+        <div id="tipsSection" style="margin-top: 50px">
+          <div class="section-header">
+            <h2>
+              <i class="fa-solid fa-lightbulb"></i> Personalized Tips & Advice
+            </h2>
+          </div>
+          <div class="grid grid-2" id="tipsGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // Dark mode detection
+      if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      ) {
+        document.documentElement.classList.add("dark");
+      }
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", (e) => {
+          document.documentElement.classList.toggle("dark", e.matches);
+        });
+
+      // Configuration
+      const CONFIG = {
+        MONTHS: [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ],
+        DAYS_IN_MONTH: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+        CONDITIONS: [
+          {
+            icon: "fa-temperature-full",
+            title: "Temperature",
+            desc: "Extreme hot and cold conditions",
+            color: "#ff6347",
+          },
+          {
+            icon: "fa-droplet",
+            title: "Precipitation",
+            desc: "Rain, snow, and wet conditions",
+            color: "#3498db",
+          },
+          {
+            icon: "fa-wind",
+            title: "Wind Speed",
+            desc: "Dangerous wind conditions",
+            color: "#2ecc71",
+          },
+          {
+            icon: "fa-solid fa-eye-slash",
+            title: "Visibility",
+            desc: "Dust, fog and low visibility",
+            color: "#95a5a6",
+          },
+        ],
+        ACTIVITIES: [
+          {
+            id: "hiking",
+            name: "Hiking",
+            icon: "fa-person-hiking",
+            affects: ["temperature", "precipitation", "wind", "visibility"],
+          },
+          {
+            id: "cycling",
+            name: "Cycling",
+            icon: "fa-person-biking",
+            affects: ["wind", "precipitation", "temperature"],
+          },
+          {
+            id: "photography",
+            name: "Photography",
+            icon: "fa-camera",
+            affects: ["visibility", "precipitation", "wind"],
+          },
+          {
+            id: "camping",
+            name: "Camping",
+            icon: "fa-campground",
+            affects: ["temperature", "precipitation", "wind"],
+          },
+          {
+            id: "beach",
+            name: "Beach Activities",
+            icon: "fa-umbrella-beach",
+            affects: ["temperature", "wind", "precipitation"],
+          },
+          {
+            id: "running",
+            name: "Running",
+            icon: "fa-person-running",
+            affects: ["temperature", "precipitation", "visibility"],
+          },
+          {
+            id: "fishing",
+            name: "Fishing",
+            icon: "fa-fish",
+            affects: ["wind", "precipitation", "temperature"],
+          },
+          {
+            id: "gardening",
+            name: "Gardening",
+            icon: "fa-seedling",
+            affects: ["temperature", "precipitation", "wind"],
+          },
+          {
+            id: "sports",
+            name: "Outdoor Sports",
+            icon: "fa-futbol",
+            affects: ["wind", "precipitation", "temperature", "visibility"],
+          },
+          {
+            id: "picnic",
+            name: "Picnicking",
+            icon: "fa-utensils",
+            affects: ["precipitation", "wind", "temperature"],
+          },
+          {
+            id: "climbing",
+            name: "Rock Climbing",
+            icon: "fa-mountain",
+            affects: ["wind", "precipitation", "temperature", "visibility"],
+          },
+          {
+            id: "kayaking",
+            name: "Water Sports",
+            icon: "fa-water",
+            affects: ["wind", "precipitation", "temperature"],
+          },
+        ],
+        RISK_FACTORS: {
+          temperature: {
+            name: "Heat Risk",
+            icon: "fa-temperature-full",
+          },
+          precipitation: { name: "Rain Risk", icon: "fa-cloud-showers-heavy" },
+          wind: { name: "Wind Risk", icon: "fa-wind" },
+          visibility: { name: "Visibility Risk", icon: "fa-eye-low-vision" },
+        },
+        TRENDS: [
+          {
+            title: "Extreme Heat",
+            changeClass: "increasing",
+            changeLabel: "Increasing",
+            period: "2014-2024",
+            percentage: "+15%",
+            footer:
+              "Number of days above 95°F has increased over the past decade",
+            data: [20, 22, 25, 27, 30, 33],
+            borderColor: "#d60000",
+          },
+          {
+            title: "Heavy Precipitation",
+            changeClass: "stable",
+            changeLabel: "Stable",
+            period: "2014-2024",
+            percentage: "±3%",
+            footer: "Rainfall patterns remain relatively consistent",
+            data: [12, 11, 13, 12, 12, 11],
+            borderColor: "#666666",
+          },
+          {
+            title: "Wind Speed",
+            changeClass: "decreasing",
+            changeLabel: "Decreasing",
+            period: "2014-2024",
+            percentage: "-8%",
+            footer: "Fewer high wind events recorded in recent years",
+            data: [18, 17, 15, 14, 13, 12],
+            borderColor: "#0077cc",
+          },
+          {
+            title: "Poor Visibility",
+            changeClass: "stable",
+            changeLabel: "Stable",
+            period: "2014-2024",
+            percentage: "±2%",
+            footer: "Fog and dust events remain consistent",
+            data: [10, 11, 10, 10, 11, 10],
+            borderColor: "#999999",
+          },
+          {
+            title: "Extreme Cold",
+            changeClass: "increasing",
+            changeLabel: "Increasing",
+            period: "2014-2024",
+            percentage: "+10%",
+            footer: "More days below 32°F recorded in recent winters",
+            data: [5, 6, 7, 8, 9, 10],
+            borderColor: "#0055aa",
+          },
+        ],
+        TIPS: {
+          hiking: {
+            high: "Consider postponing or choose indoor alternatives. If you must go, bring extra safety gear.",
+            moderate:
+              "Monitor conditions closely. Bring appropriate gear and inform others of your plans.",
+            low: "Good conditions for hiking! Remember basic safety equipment.",
+          },
+          cycling: {
+            high: "Avoid cycling in these conditions. Consider indoor training or public transport.",
+            moderate:
+              "Ride with caution. Use proper safety gear and choose protected routes.",
+            low: "Great cycling weather! Enjoy your ride with standard safety precautions.",
+          },
+          photography: {
+            high: "Protect your equipment from harsh conditions. Consider indoor or covered locations.",
+            moderate:
+              "Use weather protection for gear. Golden hour might be affected by conditions.",
+            low: "Excellent conditions for outdoor photography! Take advantage of clear skies.",
+          },
+          camping: {
+            high: "Camping not recommended. Consider cabin rentals or postpone the trip.",
+            moderate:
+              "Prepare for challenging conditions. Ensure your gear is weather-appropriate.",
+            low: "Perfect camping weather! Enjoy the great outdoors.",
+          },
+          beach: {
+            high: "Beach activities not safe. Stay indoors or find alternative entertainment.",
+            moderate:
+              "Limited beach time recommended. Stay near lifeguards and shelter.",
+            low: "Ideal beach day! Remember sun protection and stay hydrated.",
+          },
+          running: {
+            high: "Run indoors or skip today. Air quality and conditions pose health risks.",
+            moderate:
+              "Short runs okay with proper precautions. Monitor your body's response.",
+            low: "Perfect running conditions! Enjoy your workout outdoors.",
+          },
+          fishing: {
+            high: "Fishing not recommended due to dangerous conditions.",
+            moderate:
+              "Fish from shore or protected areas only. Monitor weather closely.",
+            low: "Great fishing weather! Fish are likely to be active.",
+          },
+          gardening: {
+            high: "Wait for better conditions to protect plants and your safety.",
+            moderate: "Quick garden tasks only. Protect sensitive plants.",
+            low: "Perfect for all gardening activities! Plants will thrive.",
+          },
+          sports: {
+            high: "Cancel outdoor sports. Risk of injury too high.",
+            moderate:
+              "Modified activities only. Stay alert to changing conditions.",
+            low: "Excellent conditions for all outdoor sports!",
+          },
+          picnic: {
+            high: "Plan indoor alternatives. Outdoor picnics unsafe.",
+            moderate: "Covered areas only. Have backup indoor plans.",
+            low: "Perfect picnic weather! Enjoy dining outdoors.",
+          },
+          climbing: {
+            high: "Extremely dangerous. Cancel climbing plans immediately.",
+            moderate:
+              "Easy routes only with experienced partners. Extra safety measures required.",
+            low: "Good climbing conditions! Enjoy the rock safely.",
+          },
+          kayaking: {
+            high: "Water activities extremely dangerous. Stay on land.",
+            moderate: "Calm waters only. Stay close to shore with safety gear.",
+            low: "Excellent water conditions! Enjoy paddling safely.",
+          },
+        },
+      };
+
+      // State
+      const state = {
+        location: "",
+        month: null,
+        day: null,
+        chart: null,
+        selectedActivities: new Set(),
+      };
+      let map, marker;
+
+      // Utility functions
+      const $ = (id) => document.getElementById(id);
+      const scrollTo = (selector) => {
+        console.log("Attempting to scroll to:", selector);
+        const element = document.querySelector(selector);
+        console.log("Found element:", element);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+          console.log("Scrolled to element");
+        } else {
+          console.log("Element not found");
+        }
+      };
+      const randomRange = (min, max) =>
+        Math.floor(Math.random() * (max - min + 1)) + min;
+
+      // Activity selection
+      const toggleActivity = (activityId) => {
+        if (state.selectedActivities.has(activityId)) {
+          state.selectedActivities.delete(activityId);
+        } else {
+          state.selectedActivities.add(activityId);
+        }
+
+        document.querySelectorAll(".activity-btn").forEach((btn) => {
+          const id = btn.dataset.activity;
+          btn.classList.toggle("active", state.selectedActivities.has(id));
+        });
+
+        checkFormComplete();
+      };
+
+      // Form validation
+      const checkFormComplete = () => {
+        const hasActivities = state.selectedActivities.size > 0;
+        const hasLocation = state.location.trim() !== "";
+        const hasDateTime = state.month && state.day;
+
+        $("analyzeBtn").disabled = !(
+          hasActivities &&
+          hasLocation &&
+          hasDateTime
+        );
+      };
+
+      // Map initialization
+      const initMap = () => {
+        map = L.map("map").setView([21.0285, 105.8542], 10);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+          map
+        );
+
+        map.on("click", async (e) => {
+          if (marker) map.removeLayer(marker);
+          marker = L.marker(e.latlng).addTo(map);
+
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}`
+            );
+            const data = await res.json();
+            state.location =
+              data.display_name ||
+              `${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`;
+          } catch {
+            state.location = `${e.latlng.lat.toFixed(
+              4
+            )}, ${e.latlng.lng.toFixed(4)}`;
+          }
+
+          $("locationInput").value = state.location;
+          checkFormComplete();
+        });
+      };
+
+      // Chart functions
+      const createChart = (canvasId, data) => {
+        const canvas = $(canvasId);
+        if (!canvas) return null;
+
+        return new Chart(canvas, {
+          type: "line",
+          data: {
+            labels: data.labels,
+            datasets: [
+              {
+                label: data.label || "Data",
+                data: data.values,
+                borderColor: "#5D5CDE",
+                backgroundColor: "rgba(93,92,222,0.1)",
+                tension: 0.4,
+                fill: true,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } },
+          },
+        });
+      };
+
+      const updateChart = () => {
+        const data = Array.from({ length: 7 }, () => randomRange(15, 35));
+        if (state.chart) state.chart.destroy();
+
+        state.chart = createChart("weatherChart", {
+          labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+          values: data,
+          label: "Temperature °C",
+        });
+
+        $("temp").textContent = randomRange(15, 35) + "°C";
+        $("humidity").textContent = randomRange(40, 80) + "%";
+        $("wind").textContent = randomRange(5, 20) + " km/h";
+        $("dust").textContent = randomRange(50, 150) + " AQI";
+      };
+
+      // Date selection
+      const selectMonth = (month, index) => {
+        state.month = month;
+        state.day = null;
+
+        document
+          .querySelectorAll("#monthGrid .date-btn")
+          .forEach((b) =>
+            b.classList.toggle("active", b.textContent === month)
+          );
+
+        const daySection = $("daySection");
+        daySection.classList.remove("hidden");
+
+        const dayGrid = $("dayGrid");
+        dayGrid.innerHTML = "";
+        for (let i = 1; i <= CONFIG.DAYS_IN_MONTH[index]; i++) {
+          const btn = document.createElement("button");
+          btn.className = "date-btn";
+          btn.textContent = i;
+          btn.onclick = () => selectDay(i);
+          dayGrid.appendChild(btn);
+        }
+        checkFormComplete();
+      };
+
+      const selectDay = (day) => {
+        state.day = day;
+        document
+          .querySelectorAll("#dayGrid .date-btn")
+          .forEach((b) => b.classList.toggle("active", b.textContent == day));
+        checkFormComplete();
+      };
+
+      // Results and tips
+      const showResults = () => {
+        const results = $("results");
+        results.classList.remove("hidden");
+
+        const selectedActivityNames = Array.from(state.selectedActivities)
+          .map((id) => CONFIG.ACTIVITIES.find((a) => a.id === id)?.name)
+          .join(", ");
+
+        $(
+          "resultsTitle"
+        ).innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Risk Assessment for ${selectedActivityNames} in ${state.location}`;
+
+        // Generate relevant risks based on selected activities
+        const relevantFactors = new Set();
+        state.selectedActivities.forEach((activityId) => {
+          const activity = CONFIG.ACTIVITIES.find((a) => a.id === activityId);
+          activity?.affects.forEach((factor) => relevantFactors.add(factor));
+        });
+
+        const risks = Array.from(relevantFactors).map((factor) => {
+          const config = CONFIG.RISK_FACTORS[factor];
+          const prob = randomRange(15, 75);
+          const level = prob > 60 ? "high" : prob > 35 ? "moderate" : "low";
+
+          return {
+            name: config.name,
+            icon: config.icon,
+            level,
+            prob,
+          };
+        });
+
+        $("riskCards").innerHTML = risks
+          .map(
+            (risk) => `
+                <div class="card risk-card">
+                    <span class="risk-level ${
+                      risk.level
+                    }">${risk.level.toUpperCase()}</span>
+                    <h3><i class="fa-solid ${risk.icon}"></i> ${risk.name}</h3>
+                    <p>Probability: ${risk.prob}%</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill ${
+                          risk.prob > 50 ? "red" : "green"
+                        }" style="width:${risk.prob}%"></div>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+
+        // Generate tips
+        const overallRisk =
+          risks.reduce((sum, r) => sum + r.prob, 0) / risks.length;
+        const riskLevel =
+          overallRisk > 60 ? "high" : overallRisk > 35 ? "moderate" : "low";
+
+        const tips = Array.from(state.selectedActivities).map((activityId) => {
+          const activity = CONFIG.ACTIVITIES.find((a) => a.id === activityId);
+          const tip =
+            CONFIG.TIPS[activityId]?.[riskLevel] ||
+            "Monitor weather conditions and use common sense.";
+
+          return `
+                    <div class="tip-card">
+                        <h4><i class="fa-solid ${activity.icon}"></i> ${activity.name}</h4>
+                        <p>${tip}</p>
+                    </div>
+                `;
+        });
+
+        $("tipsGrid").innerHTML = tips.join("");
+
+        // Generate historical trends
+        generateTrends();
+
+        results.scrollIntoView({ behavior: "smooth" });
+      };
+
+      const updateChartPeriod = (period) => {
+        document
+          .querySelectorAll(".city-info .btn")
+          .forEach((btn) => (btn.style.background = "#555"));
+        event.target.style.background = "var(--primary)";
+        updateChart();
+      };
+
+      // Generate historical trends
+      const generateTrends = () => {
+        const trendsHTML = CONFIG.TRENDS.map(
+          (trend, index) => `
+                <div class="trend-card">
+                    <div class="trend-title-row">
+                        <h4>${trend.title}</h4>
+                        <span class="trend-change ${trend.changeClass}">${trend.changeLabel}</span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: #888; margin: 0.5rem 0;">${trend.period}</p>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.95rem; margin-bottom: 0.5rem;">
+                        <p>Change:</p>
+                        <span class="trend-change ${trend.changeClass}">${trend.percentage}</span>
+                    </div>
+                    <div style="margin: 1rem 0; height: 140px;">
+                        <canvas id="trendChart${index}"></canvas>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #999;">${trend.footer}</p>
+                </div>
+            `
+        ).join("");
+
+        $("trendsGrid").innerHTML = trendsHTML;
+
+        // Create trend charts after DOM update
+        setTimeout(() => {
+          CONFIG.TRENDS.forEach((trend, index) => {
+            const canvas = $(`trendChart${index}`);
+            if (canvas) {
+              new Chart(canvas, {
+                type: "line",
+                data: {
+                  labels: ["2014", "2016", "2018", "2020", "2022", "2024"],
+                  datasets: [
+                    {
+                      label: trend.title,
+                      data: trend.data,
+                      borderColor: trend.borderColor,
+                      backgroundColor: trend.borderColor + "40",
+                      tension: 0.4,
+                      fill: true,
+                    },
+                  ],
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: { legend: { display: false } },
+                  scales: {
+                    y: { beginAtZero: true },
+                    x: { display: true },
+                    y: { display: true },
+                  },
+                },
+              });
+            }
+          });
+        }, 100);
+      };
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", () => {
+        // Generate conditions grid
+        $("conditionsGrid").innerHTML = CONFIG.CONDITIONS.map(
+          (c) => `
+                <div class="card">
+                    <div class="icon" style="color: ${c.color}"><i class="fa-solid ${c.icon}"></i></div>
+                    <h3>${c.title}</h3>
+                    <p>${c.desc}</p>
+                </div>
+            `
+        ).join("");
+
+        // Generate activities grid
+        $("activitiesGrid").innerHTML = CONFIG.ACTIVITIES.map(
+          (activity) => `
+                <button class="activity-btn" data-activity="${activity.id}" onclick="toggleActivity('${activity.id}')">
+                    <div><i class="fa-solid ${activity.icon}" style="font-size: 2em; margin-bottom: 10px;"></i></div>
+                    <div>${activity.name}</div>
+                </button>
+            `
+        ).join("");
+
+        // Generate month buttons
+        const monthGrid = $("monthGrid");
+        CONFIG.MONTHS.forEach((month, index) => {
+          const btn = document.createElement("button");
+          btn.className = "date-btn";
+          btn.textContent = month;
+          btn.onclick = () => selectMonth(month, index);
+          monthGrid.appendChild(btn);
+        });
+
+        // Initialize components
+        initMap();
+        updateChart();
+
+        // Event listeners
+        $("citySelect").addEventListener("change", updateChart);
+
+        let geocodeTimeout;
+        $("locationInput").addEventListener("input", (e) => {
+          state.location = e.target.value;
+          checkFormComplete();
+
+          clearTimeout(geocodeTimeout);
+          if (e.target.value.length > 2) {
+            geocodeTimeout = setTimeout(async () => {
+              try {
+                const res = await fetch(
+                  `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+                    e.target.value
+                  )}&limit=1`
+                );
+                const data = await res.json();
+                if (data.length > 0) {
+                  const lat = parseFloat(data[0].lat);
+                  const lng = parseFloat(data[0].lon);
+                  map.setView([lat, lng], 10);
+                  if (marker) map.removeLayer(marker);
+                  marker = L.marker([lat, lng]).addTo(map);
+                  state.location = data[0].display_name;
+                }
+              } catch (error) {
+                console.log("Geocoding failed:", error);
+              }
+            }, 800);
+          }
+        });
+
+        $("analyzeBtn").addEventListener("click", showResults);
+
+        // Progress bar
+        window.addEventListener("scroll", () => {
+          const scrolled = window.scrollY;
+          const height =
+            document.documentElement.scrollHeight - window.innerHeight;
+          $("progressBar").style.width = (scrolled / height) * 100 + "%";
+        });
+      });
+    </script>
+  </body>
+</html>
